@@ -8,7 +8,7 @@ https://github.com/groverburger/g3d
 local g4d = require('g4d')
 
 function love.load()
-  my_model = g4d.Model('obj_file.obj', 'texture.png')
+  	my_model = g4d.Model('obj_file.obj', 'texture.png')
 end
 
 function love.update(dt)
@@ -21,10 +21,10 @@ function love.update(dt)
 end
 
 function love.draw()
-  g4d:attach()
-  my_model:draw()
-  g4d:detach()
+  	g4d:attach()
+  	my_model:draw()
+  	g4d:detach()
   
-  g4d:draw(0, 0)
+  	g4d:draw(0, 0)
 end
 ```
