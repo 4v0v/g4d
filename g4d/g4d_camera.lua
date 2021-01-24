@@ -5,8 +5,8 @@ local function sign(x)
 	if x < 0 then return -1 else return 1 end 
 end
 
-local function not_zero(x) 
-	return sign(cos(x)) * max(abs(cos(x)), .001) 
+local function not_zero_cos(x)
+	return sign(math.cos(x)) * math.max(math.abs(math.cos(x)), .001)
 end
 
 local function unpack_params(p1, p2, p3) 
@@ -73,7 +73,11 @@ function Camera:update(dt, dir)
 	end
 
 	if dir_t ~= 0 then 
-		local cos_pitch = not_zero(cos(self.pitch))
+		local sign = 0 
+		if     math.cos(self.pitch) > 0 then sign =  1
+		elseif math.cos(self.pitch) < 0 then sign = -1 end
+
+		local cos_pitch = not_zero_cos(self.pitch)
 		local tx = sin(self.yaw) * cos_pitch
 		local ty = sin(self.pitch)
 		local tz = cos(self.yaw) * cos_pitch
@@ -106,7 +110,7 @@ end
 function Camera:look_at(tx, ty, tz)
 	local tx, ty, tz = unpack_params(tx, ty, tz)
 	self.tx, self.ty, self.tz = tx or self.tx, ty or self.ty, tz or self.tz
-	self.tx = not_zero(self.tx)
+	if self.tx == 0 then self.tx = .001 end
 
 	local dx = self.tx - self.x
 	local dy = self.ty - self.y
@@ -122,7 +126,7 @@ function Camera:look_in_dir(yaw, pitch)
 	self.yaw   = yaw   or self.yaw
 	self.pitch = pitch or self.pitch
 
-	local cos_pitch = not_zero(cos(self.pitch))
+	local cos_pitch = not_zero_cos(self.pitch)
 	self.tx = self.x + sin(self.yaw) * cos_pitch
 	self.ty = self.y - sin(self.pitch)
 	self.tz = self.z + cos(self.yaw) * cos_pitch
@@ -131,15 +135,15 @@ function Camera:look_in_dir(yaw, pitch)
 end
 
 function Camera:update_view_matrix(dt)
-	self.shader:send('view_matrix', Matrices.get_view_matrix({self.x, self.y, self.z}, {self.tx, self.ty, self.tz}, self.down))
+	self.shader:send('view_matrix', Matrices:get_view_matrix({self.x, self.y, self.z}, {self.tx, self.ty, self.tz}, self.down))
 end
 
 function Camera:update_projection_matrix(type)
 	local matrix
 	if     type == 'projection'   then
-		matrix = Matrices.get_projection_matrix(self.fov, self.near_clip, self.far_clip, self.aspect_ratio)
+		matrix = Matrices:get_projection_matrix(self.fov, self.near_clip, self.far_clip, self.aspect_ratio)
 	elseif type == 'orthographic' then
-		matrix = Matrices.get_orthographic_matrix(self.fov, size or 5, self.near_clip, self.far_clip, self.aspect_ratio)
+		matrix = Matrices:get_orthographic_matrix(self.fov, size or 5, self.near_clip, self.far_clip, self.aspect_ratio)
 	end
 
 	self.shader:send('projection_matrix', matrix)
